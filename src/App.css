@@ -1,0 +1,56 @@
+/* Global Styles for NeonThreads */
+
+@keyframes pulse-neon-cyan {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px #00f5ff, 0 0 20px #00f5ff;
+  }
+
+  50% {
+    box-shadow: 0 0 15px #00f5ff, 0 0 30px #00f5ff;
+  }
+}
+
+@keyframes pulse-neon-pink {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px #ff2d78, 0 0 20px #ff2d78;
+  }
+
+  50% {
+    box-shadow: 0 0 15px #ff2d78, 0 0 30px #ff2d78;
+  }
+}
+
+.animate-neon-cyan {
+  animation: pulse-neon-cyan 2s infinite;
+}
+
+.animate-neon-pink {
+  animation: pulse-neon-pink 2s infinite;
+}
+
+/* Custom Scrollbar for the Grid */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #bf00ff;
+  border-radius: 10px;
+}
+
+/* Fabric Canvas Styling */
+.canvas-container {
+  margin: 0 auto !important;
+}
+
+#tshirt-canvas {
+  touch-action: none;
+}
