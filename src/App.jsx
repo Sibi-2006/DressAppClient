@@ -46,7 +46,7 @@ function App() {
 
     const checkAPI = async () => {
       try {
-        const res = await fetch(`${API_URL}/health`);
+        const res = await fetch(`${API_URL}/health`, { credentials: 'include' });
         if (!res.ok) throw new Error();
         const data = await res.json();
         if (data.status === 'ok') {
