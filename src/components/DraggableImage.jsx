@@ -108,9 +108,12 @@ const DraggableImage = ({
 
     const handleStyle = {
         position: 'absolute',
-        width: '12px', height: '12px', background: 'white',
-        border: '2px solid var(--neon-cyan)',
-        zIndex: 11
+        width: '20px', height: '20px', background: 'var(--neon-cyan)',
+        border: '2px solid #0a0a0a',
+        borderRadius: '50%',
+        zIndex: 11,
+        boxShadow: '0 0 8px rgba(0, 255, 249, 0.4)',
+        cursor: 'nwse-resize'
     };
 
     return (
@@ -134,6 +137,14 @@ const DraggableImage = ({
                 transformOrigin: 'center center'
             }}
         >
+            <style>{`
+                @media (max-width: 768px) {
+                    .resize-handle-mobile {
+                        width: 28px !important;
+                        height: 28px !important;
+                    }
+                }
+            `}</style>
             <img
                 src={url?.startsWith('http') || url?.startsWith('data:') ? url : `${BASE_URL}${url}`}
                 alt="design layer"
@@ -150,38 +161,38 @@ const DraggableImage = ({
                         style={{
                             position: 'absolute', top: '-15px', right: '-15px',
                             background: '#ff5555', color: 'white', border: 'none',
-                            borderRadius: '50%', width: '26px', height: '26px',
+                            borderRadius: '50%', width: '30px', height: '30px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             cursor: 'pointer', zIndex: 12,
                             boxShadow: '0 2px 5px rgba(0,0,0,0.5)'
                         }}
                     >
-                        <X size={14} />
+                        <X size={16} />
                     </button>
 
                     {/* Rotation Handle Top Center */}
                     <div style={{
-                        position: 'absolute', top: '-30px', left: '50%', transform: 'translateX(-50%)',
+                        position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)',
                         display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 12
                     }}>
                         <div
                             onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'rotate'); }}
                             style={{
-                                width: '20px', height: '20px', borderRadius: '50%', background: 'var(--neon-cyan)',
+                                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--neon-cyan)',
                                 cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 border: '2px solid white', boxShadow: '0 0 8px var(--neon-cyan)'
                             }}
                         >
-                            <span style={{ fontSize: '12px', color: 'black' }}>↺</span>
+                            <span style={{ fontSize: '14px', color: 'black' }}>↺</span>
                         </div>
-                        <div style={{ width: '2px', height: '10px', background: 'var(--neon-cyan)' }} />
+                        <div style={{ width: '2px', height: '12px', background: 'var(--neon-cyan)' }} />
                     </div>
 
                     {/* 4 Corner Resize Handles */}
-                    <div onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'nw'); }} style={{ ...handleStyle, top: '-6px', left: '-6px', cursor: 'nwse-resize' }} />
-                    <div onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'ne'); }} style={{ ...handleStyle, top: '-6px', right: '-6px', cursor: 'nesw-resize' }} />
-                    <div onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'sw'); }} style={{ ...handleStyle, bottom: '-6px', left: '-6px', cursor: 'nesw-resize' }} />
-                    <div onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'se'); }} style={{ ...handleStyle, bottom: '-6px', right: '-6px', cursor: 'nwse-resize' }} />
+                    <div className="resize-handle-mobile" onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'nw'); }} style={{ ...handleStyle, top: '-10px', left: '-10px', cursor: 'nwse-resize' }} />
+                    <div className="resize-handle-mobile" onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'ne'); }} style={{ ...handleStyle, top: '-10px', right: '-10px', cursor: 'nesw-resize' }} />
+                    <div className="resize-handle-mobile" onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'sw'); }} style={{ ...handleStyle, bottom: '-10px', left: '-10px', cursor: 'nesw-resize' }} />
+                    <div className="resize-handle-mobile" onPointerDown={(e) => { e.stopPropagation(); handlePointerDown(e, 'se'); }} style={{ ...handleStyle, bottom: '-10px', right: '-10px', cursor: 'nwse-resize' }} />
                 </>
             )}
         </div>

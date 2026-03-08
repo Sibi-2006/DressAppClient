@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
     Upload, X, CheckCircle, Eye, ShoppingCart, Layers,
-    RotateCw, RotateCcw, FileText
+    RotateCw, RotateCcw, FileText, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
+    Maximize, Minus, Plus, Trash2, Move
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext';
@@ -69,6 +70,114 @@ const UploadZone = ({ label, count, loading, progress, onUpload, onClearAll }) =
         )}
     </div>
 );
+
+/* ─────────── Image Controls Toolbar ─────────── */
+const ImageControlsToolbar = ({ selectedImage, onUpdate, onDelete, onMove, onCenter, onRotate }) => {
+    if (!selectedImage) return null;
+
+    const SIZE_PRESETS = {
+        S: { w: 20, h: 20 },
+        M: { w: 40, h: 40 },
+        L: { w: 60, h: 60 },
+        XL: { w: 80, h: 80 }
+    };
+
+    const sizePercent = Math.round(selectedImage.size.w);
+
+    return (
+        <div className="image-controls-toolbar glassmorphism" style={{
+            width: '100%', padding: '16px', borderTop: '2px solid var(--neon-cyan)', borderRadius: '12px',
+            marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '16px'
+        }}>
+            <style>{`
+                .toolbar-section { display: flex; flex-direction: column; gap: 8px; }
+                .toolbar-label { color: #888; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+                .size-slider { -webkit-appearance: none; width: 100%; height: 4px; background: #333; border-radius: 2px; outline: none; margin: 10px 0; }
+                .size-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--neon-cyan); border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 0 6px var(--neon-cyan); }
+                .preset-btn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 6px 0; border-radius: 6px; cursor: pointer; font-size: 13px; flex: 1; transition: all 0.3s; font-family: 'Orbitron', sans-serif; }
+                .preset-btn.active { border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: 0 0 6px rgba(0,255,249,0.3); }
+                .control-row { display: flex; gap: 8px; align-items: center; }
+                .d-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: fit-content; margin: 0 auto; }
+                @media (max-width: 768px) {
+                    .size-slider::-webkit-slider-thumb { width: 24px; height: 24px; }
+                    .preset-btn { padding: 12px 0; font-size: 14px; }
+                }
+            `}</style>
+
+            {/* SIZE SECTION */}
+            <div className="toolbar-section">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="toolbar-label">Size: <span style={{ color: 'var(--neon-cyan)' }}>{sizePercent}%</span></span>
+                </div>
+                <div className="control-row">
+                    <button className="btn-icon" onClick={() => onUpdate(selectedImage.id, { size: { w: Math.max(10, selectedImage.size.w - 5), h: Math.max(10, selectedImage.size.h - 5) } })}><Minus size={14} /></button>
+                    <input
+                        type="range" className="size-slider" min="10" max="100" step="1"
+                        value={selectedImage.size.w}
+                        onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            onUpdate(selectedImage.id, { size: { w: val, h: val } });
+                        }}
+                    />
+                    <button className="btn-icon" onClick={() => onUpdate(selectedImage.id, { size: { w: Math.min(100, selectedImage.size.w + 5), h: Math.min(100, selectedImage.size.h + 5) } })}><Plus size={14} /></button>
+                </div>
+                <div className="control-row" style={{ marginTop: '4px' }}>
+                    {Object.entries(SIZE_PRESETS).map(([key, value]) => (
+                        <button
+                            key={key}
+                            className={`preset-btn ${Math.round(selectedImage.size.w) === value.w ? 'active' : ''}`}
+                            onClick={() => onUpdate(selectedImage.id, { size: value })}
+                        >
+                            {key}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }} className="tablet-col">
+                {/* ROTATION SECTION */}
+                <div className="toolbar-section">
+                    <span className="toolbar-label">Rotation</span>
+                    <div className="control-row" style={{ flexWrap: 'wrap' }}>
+                        <button className="btn-icon" style={{ flex: 1 }} onClick={() => onRotate(-15)}>-15°</button>
+                        <button className="btn-icon" style={{ flex: 1 }} onClick={() => onRotate(-5)}>-5°</button>
+                        <button className="btn-icon" style={{ flex: 1 }} onClick={() => onRotate(5)}>+5°</button>
+                        <button className="btn-icon" style={{ flex: 1 }} onClick={() => onRotate(15)}>+15°</button>
+                    </div>
+                </div>
+
+                {/* POSITION SECTION */}
+                <div className="toolbar-section">
+                    <span className="toolbar-label">Position</span>
+                    <div className="d-pad">
+                        <div />
+                        <button className="btn-icon" onClick={() => onMove('up')}><ArrowUp size={14} /></button>
+                        <div />
+                        <button className="btn-icon" onClick={() => onMove('left')}><ArrowLeft size={14} /></button>
+                        <button className="btn-icon" onClick={onCenter} style={{ fontSize: '10px' }}>CNT</button>
+                        <button className="btn-icon" onClick={() => onMove('right')}><ArrowRight size={14} /></button>
+                        <div />
+                        <button className="btn-icon" onClick={() => onMove('down')}><ArrowDown size={14} /></button>
+                        <div />
+                    </div>
+                </div>
+            </div>
+
+            {/* REMOVE ACTION */}
+            <button
+                onClick={() => onDelete(selectedImage.id)}
+                style={{
+                    background: 'rgba(255, 51, 51, 0.1)', border: '1px solid #ff3333', color: '#ff3333',
+                    padding: '12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 'bold', width: '100%',
+                    fontFamily: 'Orbitron, sans-serif'
+                }}
+            >
+                <Trash2 size={16} /> REMOVE IMAGE
+            </button>
+        </div>
+    );
+};
 
 /* ─────────── Preview Modal ─────────── */
 const OrderPreviewModal = ({ item, onConfirm, onClose, clientNote, setClientNote }) => (
@@ -274,6 +383,31 @@ const CustomizePage = () => {
         setSelectedImageId(null);
     };
 
+    const handleMoveImage = (direction) => {
+        if (!selectedImageId) return;
+        const currentLayer = images[activeSide].find(img => img.id === selectedImageId);
+        if (currentLayer) {
+            const step = 5;
+            const moves = {
+                up: { x: 0, y: -step },
+                down: { x: 0, y: step },
+                left: { x: -step, y: 0 },
+                right: { x: step, y: 0 }
+            };
+            handleUpdateImage(selectedImageId, {
+                position: {
+                    x: Math.max(0, Math.min(100, currentLayer.position.x + moves[direction].x)),
+                    y: Math.max(0, Math.min(100, currentLayer.position.y + moves[direction].y))
+                }
+            });
+        }
+    };
+
+    const handleCenterImage = () => {
+        if (!selectedImageId) return;
+        handleUpdateImage(selectedImageId, { position: { x: 50, y: 50 } });
+    };
+
     const handleFileChange = (e, side) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -359,16 +493,15 @@ const CustomizePage = () => {
                         ))}
                     </div>
 
-                    {/* Precise Rotation Controls */}
-                    {selectedImageId && (
-                        <div className="glassmorphism" style={{ padding: '10px 16px', display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
-                            <span style={{ fontSize: '0.7rem', color: '#666', fontFamily: 'Orbitron' }}>ROTATE:</span>
-                            <button onClick={() => handleRotationAdjust(-90)} className="btn-icon" title="-90°"> -90° </button>
-                            <button onClick={() => handleRotationAdjust(-15)} className="btn-icon" title="-15°"> <RotateCcw size={14} /> </button>
-                            <button onClick={() => handleRotationAdjust(15)} className="btn-icon" title="+15°"> <RotateCw size={14} /> </button>
-                            <button onClick={() => handleRotationAdjust(90)} className="btn-icon" title="+90°"> +90° </button>
-                        </div>
-                    )}
+                    {/* Easy Resize & Controls Toolbar */}
+                    <ImageControlsToolbar
+                        selectedImage={images[activeSide].find(img => img.id === selectedImageId)}
+                        onUpdate={handleUpdateImage}
+                        onDelete={handleDeleteImage}
+                        onMove={handleMoveImage}
+                        onCenter={handleCenterImage}
+                        onRotate={handleRotationAdjust}
+                    />
                 </div>
 
                 {/* ── RIGHT: Controls ── */}
