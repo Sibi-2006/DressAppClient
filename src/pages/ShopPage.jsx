@@ -23,7 +23,16 @@ const ShopPage = () => {
     }, []);
 
     const getImagePath = (product) => {
-        const colorName = product.color === 'Blue' ? 'Skyblue' : product.color;
+        // New structure support
+        if (product.images && product.colors && product.colors.length > 0) {
+            const firstColor = product.colors[0];
+            const colorData = product.images[firstColor];
+            if (colorData && colorData.front) return colorData.front;
+        }
+
+        // Fallback or old structure support
+        const colorToUse = product.color || (product.colors && product.colors[0]) || 'Black';
+        const colorName = colorToUse === 'Blue' ? 'Skyblue' : colorToUse;
         const fitPrefix = product.fit_type === 'OVERSIZED_FIT' ? 'Oversized_fit' : 'Normal_fit';
         return `/assets/${product.fit_type}/${fitPrefix}_${colorName}_frontside.png`;
     };
@@ -72,11 +81,11 @@ const ShopPage = () => {
                     <h3 className="font-orbitron" style={{ color: '#666' }}>No products found.</h3>
                 </div>
             ) : (
-                <div className="grid grid-cols-4" style={{ gap: '20px' }}>
+                <div className="grid grid-cols-4 tablet-col" style={{ gap: '20px' }}>
                     {filteredProducts.map((p, idx) => (
                         <Link
                             key={`${p._id || idx}`}
-                            to={`/customize?color=${p.color}&fit=${p.fit_type}`}
+                            to={`/customize?color=${p.color || (p.colors && p.colors[0]) || 'black'}&fit=${p.fit_type}`}
                             className="glassmorphism"
                             style={{
                                 padding: '20px', textDecoration: 'none', color: 'white',
@@ -90,7 +99,7 @@ const ShopPage = () => {
                             }}>
                                 <img
                                     src={getImagePath(p)}
-                                    alt={`${p.color} ${p.fit_type}`}
+                                    alt={p.name}
                                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                     onError={(e) => { e.target.style.opacity = '0.3'; }}
                                 />
@@ -102,19 +111,21 @@ const ShopPage = () => {
                                 }}>
                                     {p.fit_type === 'OVERSIZED_FIT' ? 'OVERSIZED' : 'NORMAL'}
                                 </div>
-                                <div style={{
-                                    position: 'absolute', bottom: '10px', left: '10px',
-                                    background: 'var(--neon-green)', color: 'var(--dark-bg)',
-                                    fontSize: '0.6rem', fontWeight: 'bold', padding: '3px 8px', borderRadius: '4px'
-                                }}>
-                                    IN STOCK
-                                </div>
+                                {p.in_stock !== false && (
+                                    <div style={{
+                                        position: 'absolute', bottom: '10px', left: '10px',
+                                        background: 'var(--neon-green)', color: 'var(--dark-bg)',
+                                        fontSize: '0.6rem', fontWeight: 'bold', padding: '3px 8px', borderRadius: '4px'
+                                    }}>
+                                        IN STOCK
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex justify-between" style={{ alignItems: 'flex-start', marginBottom: '8px' }}>
                                 <div>
                                     <h3 className="font-orbitron neon-pink" style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>
-                                        {p.color} Tee
+                                        {p.name}
                                     </h3>
                                     <p style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
                                         {p.fit_type === 'OVERSIZED_FIT' ? 'Oversized Fit' : 'Normal Fit'}
@@ -123,8 +134,8 @@ const ShopPage = () => {
                                         {[1, 2, 3, 4, 5].map(i => <Star key={i} size={10} style={{ fill: 'var(--neon-cyan)', color: 'var(--neon-cyan)' }} />)}
                                     </div>
                                 </div>
-                                <span className="text-neon-cyan" style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                                    ${p.price?.toFixed(2)}
+                                <span className="text-neon-cyan" style={{ fontWeight: 'bold', fontSize: '1rem' }}>
+                                    ₹{p.price}
                                 </span>
                             </div>
                             <button className="btn btn-cyan" style={{ marginTop: 'auto', width: '100%', padding: '10px', fontSize: '0.8rem' }}>
