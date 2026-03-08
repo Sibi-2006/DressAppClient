@@ -59,7 +59,10 @@ const MyOrdersPage = () => {
         }
     };
 
+    const [isCancelling, setIsCancelling] = useState(false);
+
     const handleCancel = async (orderId) => {
+        setIsCancelling(true);
         try {
             await api.put(`/orders/${orderId}/cancel`);
             setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'Cancelled' } : o));
@@ -67,6 +70,7 @@ const MyOrdersPage = () => {
         } catch (err) {
             toast.error(err.response?.data?.message || 'Cancellation failed.');
         } finally {
+            setIsCancelling(false);
             setCancelConfirm(null);
         }
     };
@@ -200,8 +204,16 @@ const MyOrdersPage = () => {
                             )}
                             {cancelConfirm === order._id && (
                                 <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                                    <button onClick={() => handleCancel(order._id)} className="btn btn-pink" style={{ flex: 1, padding: '10px' }}>Confirm Cancel</button>
-                                    <button onClick={() => setCancelConfirm(null)} className="btn" style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.05)' }}>Keep Order</button>
+                                    <button
+                                        onClick={() => handleCancel(order._id)}
+                                        disabled={isCancelling}
+                                        className="btn btn-pink"
+                                        style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                    >
+                                        {isCancelling ? <NeonLoader variant="spinner" /> : null}
+                                        {isCancelling ? 'CANCELING...' : 'Confirm Cancel'}
+                                    </button>
+                                    <button onClick={() => setCancelConfirm(null)} disabled={isCancelling} className="btn" style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.05)' }}>Keep Order</button>
                                 </div>
                             )}
                         </div>
@@ -226,8 +238,14 @@ const MyOrdersPage = () => {
                             style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid var(--neon-cyan)', borderRadius: '6px', color: 'white', marginBottom: '15px' }}
                         />
 
-                        <button onClick={submitUTR} disabled={verifying || utrNumber.length !== 12} className="btn btn-cyan" style={{ width: '100%', marginBottom: '10px' }}>
-                            {verifying ? 'Verifying...' : 'Submit UTR'}
+                        <button
+                            onClick={submitUTR}
+                            disabled={verifying || utrNumber.length !== 12}
+                            className="btn btn-cyan"
+                            style={{ width: '100%', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                        >
+                            {verifying ? <NeonLoader variant="spinner" /> : null}
+                            {verifying ? 'VERIFYING...' : 'Submit UTR'}
                         </button>
                         <button onClick={() => setPayingOrder(null)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', textDecoration: 'underline' }}>Close</button>
                     </div>

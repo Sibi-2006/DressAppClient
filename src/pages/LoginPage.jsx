@@ -4,17 +4,25 @@ import { AuthContext } from '../context/AuthContext';
 import { LogIn, Mail, Lock, User as UserIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import NeonLoader from '../components/NeonLoader';
+
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const success = await login(email, password);
-        if (success) {
-            navigate('/');
+        setIsLoading(true);
+        try {
+            const success = await login(email, password);
+            if (success) {
+                navigate('/');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -34,10 +42,12 @@ const LoginPage = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            disabled={isLoading}
                             style={{
                                 width: '100%', padding: '16px 16px 16px 48px', background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white',
-                                fontSize: '1rem', outline: 'none', transition: 'var(--transition)'
+                                fontSize: '1rem', outline: 'none', transition: 'var(--transition)',
+                                opacity: isLoading ? 0.7 : 1
                             }}
                         />
                     </div>
@@ -50,15 +60,34 @@ const LoginPage = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            disabled={isLoading}
                             style={{
                                 width: '100%', padding: '16px 16px 16px 48px', background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white',
-                                fontSize: '1rem', outline: 'none', transition: 'var(--transition)'
+                                fontSize: '1rem', outline: 'none', transition: 'var(--transition)',
+                                opacity: isLoading ? 0.7 : 1
                             }}
                         />
                     </div>
 
-                    <button className="btn btn-cyan" style={{ width: '100%', marginTop: '16px' }}>Sign In</button>
+                    <button
+                        type="submit"
+                        className="btn btn-cyan"
+                        disabled={isLoading}
+                        style={{
+                            width: '100%',
+                            marginTop: '16px',
+                            opacity: isLoading ? 0.7 : 1,
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px'
+                        }}
+                    >
+                        {isLoading ? <NeonLoader variant="spinner" /> : null}
+                        {isLoading ? 'SIGNING IN...' : 'Sign In'}
+                    </button>
 
                     <p style={{ textAlign: 'center', color: '#666', marginTop: '24px' }}>
                         Don't have an account? <Link to="/signup" className="text-neon-pink" style={{ fontWeight: 'bold', textDecoration: 'none' }}>Join the tribe</Link>

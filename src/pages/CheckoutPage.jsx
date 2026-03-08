@@ -219,10 +219,11 @@ const CheckoutPage = () => {
                                 <h3 className="font-orbitron neon-cyan" style={{ marginBottom: '16px', fontSize: '1.4rem' }}>💳 Pay with UPI</h3>
                                 <p style={{ color: '#ccc', marginBottom: '24px' }}>GPay • PhonePe • Paytm<br />Any UPI App</p>
 
-                                <button type="button" className="btn btn-cyan" disabled={loadingOrder} onClick={handleCreateOrder} style={{ width: '100%', padding: '16px', fontSize: '1.1rem' }}>
-                                    {loadingOrder ? 'Initializing...' : `Pay ${formatINR(getCartTotal())} →`}
+                                <button type="button" className="btn btn-cyan" disabled={loadingOrder} onClick={handleCreateOrder} style={{ width: '100%', padding: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                                    {loadingOrder ? <NeonLoader variant="spinner" /> : null}
+                                    {loadingOrder ? 'SAVING DESIGN...' : `Pay ${formatINR(getCartTotal())} →`}
                                 </button>
-                                <button type="button" style={{ background: 'transparent', border: 'none', color: '#999', marginTop: '16px', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setStep(1)}>
+                                <button type="button" style={{ background: 'transparent', border: 'none', color: '#999', marginTop: '16px', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setStep(1)} disabled={loadingOrder}>
                                     Back to Address
                                 </button>
                             </div>
@@ -246,17 +247,19 @@ const CheckoutPage = () => {
                                             maxLength="12"
                                             placeholder="e.g. 123456789012"
                                             value={utrNumber}
+                                            disabled={verifying}
                                             onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
-                                            style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid var(--neon-cyan)', borderRadius: '6px', color: 'white', textAlign: 'center', fontSize: '1.1rem', letterSpacing: '2px', marginBottom: '15px' }}
+                                            style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid var(--neon-cyan)', borderRadius: '6px', color: 'white', textAlign: 'center', fontSize: '1.1rem', letterSpacing: '2px', marginBottom: '15px', opacity: verifying ? 0.7 : 1 }}
                                         />
                                         <button
                                             type="button"
                                             className="btn btn-cyan"
                                             disabled={verifying || utrNumber.length !== 12}
                                             onClick={submitUTR}
-                                            style={{ width: '100%', padding: '12px' }}
+                                            style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
                                         >
-                                            {verifying ? 'Submitting...' : 'Submit for Verification'}
+                                            {verifying ? <NeonLoader variant="spinner" /> : null}
+                                            {verifying ? 'VERIFYING...' : 'Submit for Verification'}
                                         </button>
                                     </div>
 

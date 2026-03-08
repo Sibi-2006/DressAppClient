@@ -25,7 +25,7 @@ const COLORS = ['Black', 'White', 'Blue', 'Purple'];
 const SIZES = ['S', 'M', 'L', 'XL', '2XL'];
 
 /* ────────────── Upload Zone ────────────── */
-const UploadZone = ({ label, count, loading, onUpload, onClearAll }) => (
+const UploadZone = ({ label, count, loading, progress, onUpload, onClearAll }) => (
     <div style={{
         border: `2px dashed ${count > 0 ? 'var(--neon-cyan)' : 'rgba(255,255,255,0.1)'}`,
         borderRadius: '12px', padding: '16px', textAlign: 'center',
@@ -61,6 +61,12 @@ const UploadZone = ({ label, count, loading, onUpload, onClearAll }) => (
                 </button>
             )}
         </div>
+        {loading && (
+            <div style={{ marginTop: '12px', width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${progress}%`, background: 'var(--neon-cyan)', boxShadow: '0 0 8px var(--neon-cyan)', transition: 'width 0.3s' }} />
+                <p style={{ fontSize: '0.65rem', color: 'var(--neon-cyan)', marginTop: '4px' }}>{progress}% Uploading...</p>
+            </div>
+        )}
     </div>
 );
 
@@ -164,6 +170,7 @@ const CustomizePage = () => {
     const [selectedImageId, setSelectedImageId] = useState(null);
 
     const [uploading, setUploading] = useState({ front: false, back: false });
+    const [uploadProgress, setUploadProgress] = useState({ front: 0, back: 0 });
     const [showPreview, setShowPreview] = useState(false);
     const [pageLoading, setPageLoading] = useState(true);
 
@@ -174,6 +181,24 @@ const CustomizePage = () => {
     const { addToCart } = useContext(CartContext);
     const navigate = useNavigate();
 
+    // Preload T-Shirt Images for performance
+    useEffect(() => {
+        const colors = COLORS;
+        const fits = ['NORMAL_FIT', 'OVERSIZED_FIT'];
+        const sides = ['frontside', 'backside'];
+
+        fits.forEach(fit => {
+            const fitPrefix = fit === 'OVERSIZED_FIT' ? 'Oversized_fit' : 'Normal_fit';
+            colors.forEach(color => {
+                const colorName = color === 'Blue' ? 'Skyblue' : color;
+                sides.forEach(side => {
+                    const img = new Image();
+                    img.src = `/assets/${fit}/${fitPrefix}_${colorName}_${side}.png`;
+                });
+            });
+        });
+    }, []);
+
     useEffect(() => {
         // Simulate base assets loading
         const timer = setTimeout(() => setPageLoading(false), 1000);
@@ -182,15 +207,33 @@ const CustomizePage = () => {
 
     const uploadImage = async (file, side) => {
         if (!file) return;
+
+        // File size limit: 10MB
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('File too large. Max size is 10MB.');
+            return;
+        }
+
         setUploading(u => ({ ...u, [side]: true }));
+        setUploadProgress(p => ({ ...p, [side]: 0 }));
+
         const formData = new FormData();
         formData.append('image', file);
+
         try {
-            const { data } = await api.post('/upload', formData);
+            const { data } = await api.post('/upload', formData, {
+                onUploadProgress: (progressEvent) => {
+                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    setUploadProgress(p => ({ ...p, [side]: percent }));
+                }
+            });
+
+            console.log('Upload success, URL:', data.url);
+
             const newLayer = {
                 id: Date.now().toString(),
                 url: data.url,
-                public_id: data.public_id, // Store cloudinary public_id
+                public_id: data.public_id,
                 position: { x: 50, y: 50 },
                 size: { w: 40, h: 40 },
                 rotation: 0
@@ -199,10 +242,12 @@ const CustomizePage = () => {
             setSelectedImageId(newLayer.id);
             setActiveSide(side);
             toast.success(`${side === 'front' ? 'Front' : 'Back'} design uploaded!`);
-        } catch {
-            toast.error('Upload failed. Try again.');
+        } catch (error) {
+            console.error('Upload Error:', error);
+            toast.error('Upload failed. Check connection & try again.');
         } finally {
             setUploading(u => ({ ...u, [side]: false }));
+            setUploadProgress(p => ({ ...p, [side]: 0 }));
         }
     };
 
@@ -410,6 +455,7 @@ const CustomizePage = () => {
                                 label="FRONT SIDE"
                                 count={images.front.length}
                                 loading={uploading.front}
+                                progress={uploadProgress.front}
                                 onUpload={() => frontInputRef.current.click()}
                                 onClearAll={() => { setImages(prev => ({ ...prev, front: [] })); setSelectedImageId(null); }}
                             />
@@ -417,6 +463,7 @@ const CustomizePage = () => {
                                 label="BACK SIDE"
                                 count={images.back.length}
                                 loading={uploading.back}
+                                progress={uploadProgress.back}
                                 onUpload={() => backInputRef.current.click()}
                                 onClearAll={() => { setImages(prev => ({ ...prev, back: [] })); setSelectedImageId(null); }}
                             />

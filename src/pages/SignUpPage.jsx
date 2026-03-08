@@ -4,6 +4,8 @@ import { AuthContext } from '../context/AuthContext';
 import { UserPlus, Mail, Lock, User as UserIcon, Phone, MessageCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import NeonLoader from '../components/NeonLoader';
+
 const SignUpPage = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ const SignUpPage = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [sameAsPhone, setSameAsPhone] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const { register } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -32,9 +35,14 @@ const SignUpPage = () => {
             return;
         }
 
-        const success = await register(name, email, password, phoneNumber, finalWhatsapp);
-        if (success) {
-            navigate('/');
+        setIsLoading(true);
+        try {
+            const success = await register(name, email, password, phoneNumber, finalWhatsapp);
+            if (success) {
+                navigate('/');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -54,10 +62,11 @@ const SignUpPage = () => {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
+                            disabled={isLoading}
                             style={{
                                 width: '100%', padding: '16px 16px 16px 48px', background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white',
-                                fontSize: '1rem', outline: 'none'
+                                fontSize: '1rem', outline: 'none', opacity: isLoading ? 0.7 : 1
                             }}
                         />
                     </div>
@@ -70,10 +79,11 @@ const SignUpPage = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            disabled={isLoading}
                             style={{
                                 width: '100%', padding: '16px 16px 16px 48px', background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white',
-                                fontSize: '1rem', outline: 'none'
+                                fontSize: '1rem', outline: 'none', opacity: isLoading ? 0.7 : 1
                             }}
                         />
                     </div>
@@ -86,10 +96,11 @@ const SignUpPage = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            disabled={isLoading}
                             style={{
                                 width: '100%', padding: '16px 16px 16px 48px', background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white',
-                                fontSize: '1rem', outline: 'none'
+                                fontSize: '1rem', outline: 'none', opacity: isLoading ? 0.7 : 1
                             }}
                         />
                     </div>
@@ -103,10 +114,11 @@ const SignUpPage = () => {
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').substring(0, 10))}
                             required
+                            disabled={isLoading}
                             style={{
                                 width: '100%', padding: '16px 16px 16px 85px', background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white',
-                                fontSize: '1rem', outline: 'none'
+                                fontSize: '1rem', outline: 'none', opacity: isLoading ? 0.7 : 1
                             }}
                         />
                     </div>
@@ -116,6 +128,7 @@ const SignUpPage = () => {
                             type="checkbox"
                             id="samePhone"
                             checked={sameAsPhone}
+                            disabled={isLoading}
                             onChange={(e) => setSameAsPhone(e.target.checked)}
                             style={{ width: '18px', height: '18px', accentColor: 'var(--neon-pink)', cursor: 'pointer' }}
                         />
@@ -134,16 +147,34 @@ const SignUpPage = () => {
                                 value={whatsappNumber}
                                 onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, '').substring(0, 10))}
                                 required={!sameAsPhone}
+                                disabled={isLoading}
                                 style={{
                                     width: '100%', padding: '16px 16px 16px 85px', background: 'rgba(255,255,255,0.05)',
                                     border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white',
-                                    fontSize: '1rem', outline: 'none'
+                                    fontSize: '1rem', outline: 'none', opacity: isLoading ? 0.7 : 1
                                 }}
                             />
                         </div>
                     )}
 
-                    <button className="btn btn-pink" style={{ width: '100%', marginTop: '16px' }}>Sign Up</button>
+                    <button
+                        type="submit"
+                        className="btn btn-pink"
+                        disabled={isLoading}
+                        style={{
+                            width: '100%',
+                            marginTop: '16px',
+                            opacity: isLoading ? 0.7 : 1,
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px'
+                        }}
+                    >
+                        {isLoading ? <NeonLoader variant="spinner" /> : null}
+                        {isLoading ? 'JOINING...' : 'Sign Up'}
+                    </button>
 
                     <p style={{ textAlign: 'center', color: '#666', marginTop: '24px' }}>
                         Already have an account? <Link to="/login" className="text-neon-cyan" style={{ fontWeight: 'bold', textDecoration: 'none' }}>Log in here</Link>

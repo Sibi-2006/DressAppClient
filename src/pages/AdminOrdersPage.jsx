@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Truck, CheckCircle, Package, Clock, XCircle, MessageCircle, X, Download, Eye, Layers, Search } from 'lucide-react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import api from '../utils/api';
+import api, { BASE_URL } from '../utils/api';
 import toast from 'react-hot-toast';
 import TShirtPreview from '../components/TShirtPreview';
+import { Phone, MessageSquare, Copy, ExternalLink } from 'lucide-react';
 
 const formatINR = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -25,61 +26,59 @@ const AdminOrdersPage = () => {
 
     const downloadImage = async (url, filename) => {
         try {
-            const response = await fetch(url);
+            // Use proxy to bypass Cloudinary CORS
+            const proxyUrl = `${BASE_URL}/api/admin/download?url=${encodeURIComponent(url)}&filename=${filename}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error('Proxy download failed');
             const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
+            saveAs(blob, filename);
         } catch (error) {
-            toast.error("Download failed");
+            console.error(error);
+            toast.error("Download failed. Try again.");
         }
     };
 
     const downloadAllDesigns = async (order) => {
         const zip = new JSZip();
-        const folder = zip.folder(`NEONTHREADS_${order._id}_Designs`);
-
         const promises = [];
+
+        toast.loading("Preparing designs...", { id: 'zip' });
+
         order.items.forEach((item, itemIdx) => {
             if (item.front_images) {
                 item.front_images.forEach((img, imgIdx) => {
                     promises.push((async () => {
-                        const res = await fetch(img.url);
+                        const proxyUrl = `${BASE_URL}/api/admin/download?url=${encodeURIComponent(img.url)}`;
+                        const res = await fetch(proxyUrl);
                         const blob = await res.blob();
                         const ext = img.url.split('.').pop().split('?')[0] || 'png';
-                        folder.file(`Item${itemIdx + 1}_Front_Design_${imgIdx + 1}.${ext}`, blob);
+                        zip.file(`Item${itemIdx + 1}_Front_Design_${imgIdx + 1}.${ext}`, blob);
                     })());
-                }
-                );
+                });
             }
             if (item.back_images) {
                 item.back_images.forEach((img, imgIdx) => {
                     promises.push((async () => {
-                        const res = await fetch(img.url);
+                        const proxyUrl = `${BASE_URL}/api/admin/download?url=${encodeURIComponent(img.url)}`;
+                        const res = await fetch(proxyUrl);
                         const blob = await res.blob();
                         const ext = img.url.split('.').pop().split('?')[0] || 'png';
-                        folder.file(`Item${itemIdx + 1}_Back_Design_${imgIdx + 1}.${ext}`, blob);
+                        zip.file(`Item${itemIdx + 1}_Back_Design_${imgIdx + 1}.${ext}`, blob);
                     })());
                 });
             }
         });
 
         if (promises.length === 0) {
-            toast.error("No design files to download");
+            toast.error("No design files to download", { id: 'zip' });
             return;
         }
 
-        toast.loading("Zipping designs...", { id: 'zip' });
         try {
             await Promise.all(promises);
             const content = await zip.generateAsync({ type: 'blob' });
             saveAs(content, `NEONTHREADS_${order._id}_Designs.zip`);
-            toast.success("ZIP Ready!", { id: 'zip' });
+            toast.success("Design ZIP Ready!", { id: 'zip' });
         } catch (error) {
             toast.error("Failed to create ZIP", { id: 'zip' });
         }
@@ -239,9 +238,15 @@ const AdminOrdersPage = () => {
                                     <span style={{ color: '#666', fontSize: '0.72rem' }}>
                                         ID: <span className="text-neon-cyan">{order._id}</span>
                                     </span>
-                                    <span style={{ color: '#ccc', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                        {order.userId?.name || 'Unknown Customer'}
-                                    </span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{ color: '#ccc', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                            {order.userId?.name || 'Unknown Customer'}
+                                        </span>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                            <a href={`tel:${order.userId?.phone_number}`} title="Call Customer" style={{ color: 'var(--neon-cyan)', opacity: 0.6 }} onClick={e => e.stopPropagation()}><Phone size={14} /></a>
+                                            <a href={`https://wa.me/91${order.userId?.whatsapp_number || order.userId?.phone_number}`} target="_blank" rel="noreferrer" title="WhatsApp Customer" style={{ color: '#25D366', opacity: 0.6 }} onClick={e => e.stopPropagation()}><MessageSquare size={14} /></a>
+                                        </div>
+                                    </div>
                                     <span style={{ color: '#666', fontSize: '0.75rem' }}>
                                         {new Date(order.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
                                         &nbsp;•&nbsp; {order.items.length} item(s)
@@ -420,7 +425,40 @@ const AdminOrdersPage = () => {
                                     </div>
 
                                     {/* Shipping Address */}
-                                    <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="flex-mobile-col">
+                                    <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }} className="flex-mobile-col">
+                                        {/* Contact Section */}
+                                        <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                            <p style={{ color: '#666', fontSize: '0.72rem', fontFamily: 'Orbitron', marginBottom: '12px' }}>👤 CLIENT CONTACT</p>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <div>
+                                                    <span style={{ color: '#777', fontSize: '0.7rem' }}>NAME</span>
+                                                    <p style={{ color: 'white', fontWeight: 'bold' }}>{order.userId?.name || 'N/A'}</p>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <div>
+                                                        <span style={{ color: '#777', fontSize: '0.7rem' }}>📱 PHONE</span>
+                                                        <p style={{ color: 'white' }}>{order.userId?.phone_number || 'N/A'}</p>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button onClick={() => { navigator.clipboard.writeText(order.userId?.phone_number); toast.success("Copied!"); }} className="btn-icon" title="Copy"><Copy size={12} /></button>
+                                                        <a href={`tel:${order.userId?.phone_number}`} className="btn-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Call"><Phone size={12} /></a>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <div>
+                                                        <span style={{ color: '#777', fontSize: '0.7rem' }}>💬 WHATSAPP</span>
+                                                        <p style={{ color: '#25D366', fontWeight: 'bold' }}>{order.userId?.whatsapp_number || order.userId?.phone_number || 'N/A'}</p>
+                                                    </div>
+                                                    <a
+                                                        href={`https://wa.me/91${order.userId?.whatsapp_number || order.userId?.phone_number}?text=${encodeURIComponent(`Hello ${order.userId?.name || 'Customer'},\n\nRegarding your NEONTHREADS order #${order._id}...`)}`}
+                                                        target="_blank" rel="noreferrer" className="btn-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#25D36620', border: '1px solid #25D36640' }} title="Chat"
+                                                    >
+                                                        <MessageSquare size={12} style={{ color: '#25D366' }} />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
                                             <p style={{ color: '#666', fontSize: '0.72rem', fontFamily: 'Orbitron', marginBottom: '8px' }}>SHIPPING ADDRESS</p>
                                             <p style={{ color: '#ccc', fontSize: '0.85rem' }}>
