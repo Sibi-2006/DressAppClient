@@ -23,64 +23,43 @@ const AdminOrdersPage = () => {
     const [waModal, setWaModal] = useState({ isOpen: false, order: null, text: '' });
     const [filter, setFilter] = useState('ALL'); // ALL, VERIFY, PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
     const [lightbox, setLightbox] = useState({ isOpen: false, url: '', side: '' });
+    const [downloading, setDownloading] = useState(null);
+    const [zipDownloading, setZipDownloading] = useState(false);
 
-    const downloadImage = async (url, filename) => {
+    const downloadSingleImage = async (url, filename) => {
         try {
-            // Use proxy to bypass Cloudinary CORS
-            const proxyUrl = `${BASE_URL}/api/admin/download?url=${encodeURIComponent(url)}&filename=${filename}`;
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error('Proxy download failed');
+            setDownloading(filename);
+            const proxyUrl = `${BASE_URL}/api/admin/download-image?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+            const response = await fetch(proxyUrl, { credentials: 'include' });
+            if (!response.ok) throw new Error('Download failed');
             const blob = await response.blob();
             saveAs(blob, filename);
         } catch (error) {
             console.error(error);
             toast.error("Download failed. Try again.");
+        } finally {
+            setDownloading(null);
         }
     };
 
-    const downloadAllDesigns = async (order) => {
-        const zip = new JSZip();
-        const promises = [];
-
-        toast.loading("Preparing designs...", { id: 'zip' });
-
-        order.items.forEach((item, itemIdx) => {
-            if (item.front_images) {
-                item.front_images.forEach((img, imgIdx) => {
-                    promises.push((async () => {
-                        const proxyUrl = `${BASE_URL}/api/admin/download?url=${encodeURIComponent(img.url)}`;
-                        const res = await fetch(proxyUrl);
-                        const blob = await res.blob();
-                        const ext = img.url.split('.').pop().split('?')[0] || 'png';
-                        zip.file(`Item${itemIdx + 1}_Front_Design_${imgIdx + 1}.${ext}`, blob);
-                    })());
-                });
-            }
-            if (item.back_images) {
-                item.back_images.forEach((img, imgIdx) => {
-                    promises.push((async () => {
-                        const proxyUrl = `${BASE_URL}/api/admin/download?url=${encodeURIComponent(img.url)}`;
-                        const res = await fetch(proxyUrl);
-                        const blob = await res.blob();
-                        const ext = img.url.split('.').pop().split('?')[0] || 'png';
-                        zip.file(`Item${itemIdx + 1}_Back_Design_${imgIdx + 1}.${ext}`, blob);
-                    })());
-                });
-            }
-        });
-
-        if (promises.length === 0) {
-            toast.error("No design files to download", { id: 'zip' });
-            return;
-        }
-
+    const downloadAllZip = async (order) => {
         try {
-            await Promise.all(promises);
-            const content = await zip.generateAsync({ type: 'blob' });
-            saveAs(content, `NEONTHREADS_${order._id}_Designs.zip`);
+            setZipDownloading(true);
+            toast.loading("Generating ZIP on server...", { id: 'zip' });
+
+            const zipUrl = `${BASE_URL}/api/admin/download-zip/${order._id}`;
+            const response = await fetch(zipUrl, { credentials: 'include' });
+
+            if (!response.ok) throw new Error('ZIP download failed');
+
+            const blob = await response.blob();
+            saveAs(blob, `NEONTHREADS_${order.orderId || order._id}_Designs.zip`);
             toast.success("Design ZIP Ready!", { id: 'zip' });
         } catch (error) {
+            console.error(error);
             toast.error("Failed to create ZIP", { id: 'zip' });
+        } finally {
+            setZipDownloading(false);
         }
     };
 
@@ -375,13 +354,19 @@ const AdminOrdersPage = () => {
                                                 <Layers size={18} /> CLIENT DESIGN FILES
                                             </h3>
                                             <button
-                                                onClick={() => downloadAllDesigns(order)}
+                                                onClick={() => downloadAllZip(order)}
+                                                disabled={zipDownloading}
                                                 style={{
                                                     padding: '8px 16px', background: 'rgba(0, 255, 249, 0.1)', border: '1px dashed var(--neon-cyan)',
-                                                    color: 'var(--neon-cyan)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold'
+                                                    color: 'var(--neon-cyan)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold',
+                                                    opacity: zipDownloading ? 0.6 : 1
                                                 }}
                                             >
-                                                <Download size={14} /> Download All (ZIP)
+                                                {zipDownloading ? '⏳ Creating ZIP...' : (
+                                                    <>
+                                                        <Download size={14} /> Download All (ZIP)
+                                                    </>
+                                                )}
                                             </button>
                                         </div>
 
@@ -396,7 +381,9 @@ const AdminOrdersPage = () => {
                                                                 <img src={img.url} alt="front" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', background: '#111' }} />
                                                                 <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
                                                                     <button onClick={() => setLightbox({ isOpen: true, url: img.url, side: 'FRONT' })} className="btn-icon" style={{ flex: 1, padding: '4px' }} title="View"><Eye size={12} /></button>
-                                                                    <button onClick={() => downloadImage(img.url, `NEONTHREADS_${order._id}_Front_${idx + 1}`)} className="btn-icon" style={{ flex: 1, padding: '4px' }} title="Download"><Download size={12} /></button>
+                                                                    <button onClick={() => downloadSingleImage(img.url, `NEONTHREADS_${order._id}_Front_${idx + 1}.jpg`)} disabled={downloading === `NEONTHREADS_${order._id}_Front_${idx + 1}.jpg`} className="btn-icon" style={{ flex: 1, padding: '4px', opacity: downloading === `NEONTHREADS_${order._id}_Front_${idx + 1}.jpg` ? 0.6 : 1 }} title="Download">
+                                                                        {downloading === `NEONTHREADS_${order._id}_Front_${idx + 1}.jpg` ? '⏳' : <Download size={12} />}
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         ))
@@ -414,7 +401,9 @@ const AdminOrdersPage = () => {
                                                                 <img src={img.url} alt="back" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', background: '#111' }} />
                                                                 <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
                                                                     <button onClick={() => setLightbox({ isOpen: true, url: img.url, side: 'BACK' })} className="btn-icon" style={{ flex: 1, padding: '4px' }} title="View"><Eye size={12} /></button>
-                                                                    <button onClick={() => downloadImage(img.url, `NEONTHREADS_${order._id}_Back_${idx + 1}`)} className="btn-icon" style={{ flex: 1, padding: '4px' }} title="Download"><Download size={12} /></button>
+                                                                    <button onClick={() => downloadSingleImage(img.url, `NEONTHREADS_${order._id}_Back_${idx + 1}.jpg`)} disabled={downloading === `NEONTHREADS_${order._id}_Back_${idx + 1}.jpg`} className="btn-icon" style={{ flex: 1, padding: '4px', opacity: downloading === `NEONTHREADS_${order._id}_Back_${idx + 1}.jpg` ? 0.6 : 1 }} title="Download">
+                                                                        {downloading === `NEONTHREADS_${order._id}_Back_${idx + 1}.jpg` ? '⏳' : <Download size={12} />}
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         ))
