@@ -19,9 +19,6 @@
 | **Login** | `/login` | User and admin authentication |
 | **Sign Up** | `/signup` | New user registration |
 | **My Orders** | `/my-orders` | Order history with design previews |
-| **Admin Dashboard** | `/admin/dashboard` | Sales analytics overview |
-| **Admin Orders** | `/admin/orders` | Order management for staff |
-| **Admin Config** | `/admin/settings/notifications` | WhatsApp, toast and product settings |
 
 ---
 
