@@ -22,7 +22,7 @@ const useWindowWidth = () => {
     return width;
 };
 
-const COLORS = ['Black', 'White', 'Blue', 'Purple'];
+const COLORS = ['Black', 'White', 'Skyblue', 'Purple'];
 const SIZES = ['S', 'M', 'L', 'XL', '2XL'];
 
 /* ────────────── Upload Zone ────────────── */
@@ -264,7 +264,15 @@ const OrderPreviewModal = ({ item, onConfirm, onClose, clientNote, setClientNote
 
 const CustomizePage = () => {
     const [searchParams] = useSearchParams();
-    const initialColor = searchParams.get('color') || 'Black';
+
+    const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
+
+    let initialColorParam = searchParams.get('color');
+    if (initialColorParam) {
+        initialColorParam = initialColorParam.toLowerCase() === 'blue' ? 'Skyblue' : capitalize(initialColorParam);
+    }
+
+    const initialColor = initialColorParam || 'Black';
     const initialFit = searchParams.get('fit') || 'NORMAL_FIT';
 
     const [color, setColor] = useState(initialColor);
@@ -298,11 +306,10 @@ const CustomizePage = () => {
 
         fits.forEach(fit => {
             const fitPrefix = fit === 'OVERSIZED_FIT' ? 'Oversized_fit' : 'Normal_fit';
-            colors.forEach(color => {
-                const colorName = color === 'Blue' ? 'Skyblue' : color;
+            colors.forEach(c => {
                 sides.forEach(side => {
                     const img = new Image();
-                    img.src = `/assets/${fit}/${fitPrefix}_${colorName}_${side}.png`;
+                    img.src = `/assets/${fit}/${fitPrefix}_${c}_${side}.png`;
                 });
             });
         });
@@ -446,7 +453,7 @@ const CustomizePage = () => {
     };
 
     const windowWidth = useWindowWidth();
-    const colorHexMap = { Black: '#000', White: '#eee', Blue: '#00ddec', Purple: '#ac00e6' };
+    const colorHexMap = { Black: '#080808', White: '#f5f5f5', Skyblue: '#00ddec', Purple: '#ac00e6' };
 
     if (pageLoading) return <NeonLoader variant="fullscreen" text="Engaging Creative Tools..." />;
 

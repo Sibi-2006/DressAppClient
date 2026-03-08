@@ -23,18 +23,28 @@ const ShopPage = () => {
     }, []);
 
     const getImagePath = (product) => {
-        // New structure support
+        // New structure support (highest priority)
         if (product.images && product.colors && product.colors.length > 0) {
             const firstColor = product.colors[0];
             const colorData = product.images[firstColor];
             if (colorData && colorData.front) return colorData.front;
         }
 
+        // Helper to capitalize first letter
+        const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
         // Fallback or old structure support
-        const colorToUse = product.color || (product.colors && product.colors[0]) || 'Black';
-        const colorName = colorToUse === 'Blue' ? 'Skyblue' : colorToUse;
+        let colorToUse = product.color || (product.colors && product.colors[0]) || 'Black';
+
+        // Handle variations like Skyblue vs Blue
+        if (colorToUse.toLowerCase() === 'blue' || colorToUse.toLowerCase() === 'skyblue') {
+            colorToUse = 'Skyblue';
+        } else {
+            colorToUse = capitalize(colorToUse);
+        }
+
         const fitPrefix = product.fit_type === 'OVERSIZED_FIT' ? 'Oversized_fit' : 'Normal_fit';
-        return `/assets/${product.fit_type}/${fitPrefix}_${colorName}_frontside.png`;
+        return `/assets/${product.fit_type}/${fitPrefix}_${colorToUse}_frontside.png`;
     };
 
     const filteredProducts = activeFit === 'ALL'
@@ -101,7 +111,11 @@ const ShopPage = () => {
                                     src={getImagePath(p)}
                                     alt={p.name}
                                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                    onError={(e) => { e.target.style.opacity = '0.3'; }}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '/assets/placeholder.png';
+                                        e.target.style.opacity = '0.5';
+                                    }}
                                 />
                                 <div style={{
                                     position: 'absolute', top: '10px', right: '10px',
