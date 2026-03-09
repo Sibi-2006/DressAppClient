@@ -442,7 +442,11 @@ const CustomizePage = () => {
     });
 
     const handlePreview = () => {
-        if (!user) { toast.error('Please login first'); navigate('/login'); return; }
+        if (!user) {
+            sessionStorage.setItem('redirectAfterLogin', '/customize');
+            navigate('/login?tab=signin');
+            return;
+        }
         setShowPreview(true);
     };
 

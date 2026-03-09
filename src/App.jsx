@@ -81,9 +81,13 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/shop" element={<ShopPage />} />
-                <Route path="/customize" element={<CustomizePage />} />
+                <Route path="/customize" element={
+                  <ProtectedRoute>
+                    <CustomizePage />
+                  </ProtectedRoute>
+                } />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/signup" element={<LoginPage />} />
 
                 {/* Protected User Routes */}
                 <Route path="/cart" element={

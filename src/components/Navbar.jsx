@@ -70,7 +70,27 @@ const Navbar = () => {
                                 <button onClick={handleLogout} className="btn-outline-purple" style={{ padding: '10px 26px', fontSize: '0.9rem', borderRadius: '50px', fontWeight: 'bold' }}>Logout</button>
                             </div>
                         ) : (
-                            <Link to="/login" className="btn btn-cyan" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Login</Link>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <Link to="/login?tab=signin" style={{
+                                    border: '1px solid #00ffff',
+                                    color: '#00ffff',
+                                    background: 'transparent',
+                                    padding: '8px 20px',
+                                    borderRadius: '8px',
+                                    textDecoration: 'none',
+                                    fontWeight: 'bold',
+                                    fontSize: '0.85rem'
+                                }}>Sign In</Link>
+                                <Link to="/login?tab=signup" style={{
+                                    background: '#00ffff',
+                                    color: '#0a0a0a',
+                                    padding: '8px 20px',
+                                    borderRadius: '8px',
+                                    textDecoration: 'none',
+                                    fontWeight: '700',
+                                    fontSize: '0.85rem'
+                                }}>Sign Up</Link>
+                            </div>
                         )}
                     </div>
 
@@ -134,7 +154,31 @@ const Navbar = () => {
                                     <button onClick={handleLogout} className="btn-outline-purple btn-mobile-full" style={{ padding: '12px', borderRadius: '50px' }}>LOGOUT</button>
                                 </div>
                             ) : (
-                                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="btn btn-cyan btn-mobile-full" style={{ textAlign: 'center' }}>LOGIN</Link>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <Link to="/login?tab=signin" onClick={() => setIsMenuOpen(false)} style={{
+                                        textAlign: 'center',
+                                        width: '100%',
+                                        border: '1px solid #00ffff',
+                                        color: '#00ffff',
+                                        background: 'transparent',
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        textDecoration: 'none',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.9rem'
+                                    }}>Sign In</Link>
+                                    <Link to="/login?tab=signup" onClick={() => setIsMenuOpen(false)} style={{
+                                        textAlign: 'center',
+                                        width: '100%',
+                                        background: '#00ffff',
+                                        color: '#0a0a0a',
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        textDecoration: 'none',
+                                        fontWeight: '700',
+                                        fontSize: '0.9rem'
+                                    }}>Sign Up</Link>
+                                </div>
                             )}
                         </div>
                     </div>

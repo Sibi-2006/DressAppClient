@@ -24,7 +24,7 @@ const Footer = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <Link to="/shop" style={{ color: '#999', textDecoration: 'none', fontSize: '0.9rem' }}>Shop Collection</Link>
                             <Link to="/customize" style={{ color: '#999', textDecoration: 'none', fontSize: '0.9rem' }}>Custom Editor</Link>
-                            <Link to="/signup" style={{ color: '#999', textDecoration: 'none', fontSize: '0.9rem' }}>Join the Tribe</Link>
+                            <Link to="/login?tab=signup" style={{ color: '#999', textDecoration: 'none', fontSize: '0.9rem' }}>Join the Tribe</Link>
                         </div>
                     </div>
 

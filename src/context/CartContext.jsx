@@ -28,7 +28,7 @@ export const CartProvider = ({ children }) => {
 
     const addToCart = async (item) => {
         if (!user) {
-            toast.error('Please login to add to cart');
+            sessionStorage.setItem('redirectAfterLogin', '/cart');
             return;
         }
         try {

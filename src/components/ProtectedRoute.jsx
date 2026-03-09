@@ -15,7 +15,8 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     }
 
     if (!user) {
-        return <Navigate to={`/login?redirect=${location.pathname}`} replace />;
+        sessionStorage.setItem('redirectAfterLogin', location.pathname);
+        return <Navigate to="/login?tab=signin" replace />;
     }
 
     if (adminOnly && user.role !== 'admin') {

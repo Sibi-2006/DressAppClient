@@ -95,7 +95,7 @@ const Home = () => {
                 <div className="glassmorphism p-12 rounded-[2rem] border border-white/10 relative overflow-hidden group">
                     <h2 className="font-orbitron neon-pink text-4xl font-black mb-6 relative z-10">READY TO MAKE YOUR MARK?</h2>
                     <p className="text-gray-400 text-lg mb-10 relative z-10">Join thousands of creators building their unique brand with NeonThreads.</p>
-                    <Link to="/signup" className="btn-neon-pink text-lg px-8 relative z-10">Create Your Account</Link>
+                    <Link to="/login?tab=signup" className="btn-neon-pink text-lg px-8 relative z-10">Create Your Account</Link>
                 </div>
             </section>
         </div>
