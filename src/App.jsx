@@ -27,6 +27,13 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import NeonLoadingScreen from './components/NeonLoadingScreen';
 import { API_URL } from './utils/api';
+import { useScrollToTop } from './hooks/useScrollToTop';
+
+// Fires on every route change — applied globally
+function ScrollToTop() {
+  useScrollToTop();
+  return null;
+}
 
 function App() {
   const [apiReady, setApiReady] = useState(false);
@@ -74,6 +81,7 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <Router>
+          <ScrollToTop />
           <div className="flex flex-col min-h-screen">
             <Navbar />
 
