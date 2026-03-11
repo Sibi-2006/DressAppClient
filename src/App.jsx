@@ -20,6 +20,7 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminSettingsNotificationsPage from './pages/AdminSettingsNotificationsPage';
+import HowToUsePage from './pages/HowToUsePage';
 
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
@@ -88,6 +89,7 @@ function App() {
                 } />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<LoginPage />} />
+                <Route path="/how-to-use" element={<HowToUsePage />} />
 
                 {/* Protected User Routes */}
                 <Route path="/cart" element={

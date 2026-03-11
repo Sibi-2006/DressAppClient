@@ -34,6 +34,7 @@ const Navbar = () => {
                 <div className="flex hide-mobile" style={{ gap: '32px' }}>
                     <Link to="/shop" style={{ color: '#ccc', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.9rem' }}>Shop</Link>
                     <Link to="/customize" style={{ color: '#ccc', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.9rem' }}>Customize</Link>
+                    <Link to="/how-to-use" style={{ color: '#ccc', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.9rem' }}>Guide</Link>
                     {user && <Link to="/my-orders" style={{ color: '#ccc', textDecoration: 'none', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.9rem' }}>My Orders</Link>}
                     {user && user.role === 'admin' && (
                         <>
@@ -135,6 +136,7 @@ const Navbar = () => {
 
                         <Link to="/shop" onClick={() => setIsMenuOpen(false)} style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '1.2rem', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>SHOP</Link>
                         <Link to="/customize" onClick={() => setIsMenuOpen(false)} style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '1.2rem', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>CUSTOMIZE</Link>
+                        <Link to="/how-to-use" onClick={() => setIsMenuOpen(false)} style={{ color: '#00ffff', textDecoration: 'none', fontWeight: 'bold', fontSize: '1.2rem', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>HOW TO USE</Link>
                         {user && <Link to="/my-orders" onClick={() => setIsMenuOpen(false)} style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '1.2rem', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>MY ORDERS</Link>}
                         {user && user.role === 'admin' && (
                             <>

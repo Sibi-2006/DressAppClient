@@ -91,7 +91,7 @@ const ShopPage = () => {
                     <h3 className="font-orbitron" style={{ color: '#666' }}>No products found.</h3>
                 </div>
             ) : (
-                <div className="grid grid-cols-4 tablet-col" style={{ gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
                     {filteredProducts.map((p, idx) => (
                         <Link
                             key={`${p._id || idx}`}
