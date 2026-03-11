@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Shirt, Zap, Shield, Truck, ChevronRight, ArrowRight } from 'lucide-react';
+import { Shirt, Zap, Shield, Truck, ChevronRight, ArrowRight, ChevronLeft } from 'lucide-react';
 import WelcomeToast from '../components/WelcomeToast';
 import api from '../utils/api';
 
 let toastDismissedInSession = false;
 
-/* ── custom scrollbar style injected once ── */
+/* ── custom hide-scrollbar style injected once ── */
 const SCROLLBAR_CSS = `
-.gallery-scroll::-webkit-scrollbar { width: 4px; }
-.gallery-scroll::-webkit-scrollbar-track { background: #0a0a0a; }
-.gallery-scroll::-webkit-scrollbar-thumb { background: #00ffff33; border-radius: 2px; }
-.gallery-scroll::-webkit-scrollbar-thumb:hover { background: #00ffff88; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 `;
 
 function injectScrollbarCSS() {
@@ -32,7 +30,7 @@ const getImagePath = (product) => {
     if (c.toLowerCase() === 'blue' || c.toLowerCase() === 'skyblue') c = 'Skyblue';
     else c = cap(c);
     const prefix = product.fit_type === 'OVERSIZED_FIT' ? 'Oversized_fit' : 'Normal_fit';
-    return `/assets/${product.fit_type}/${prefix}_${c}_frontside.png`;
+    return `/ assets / ${product.fit_type}/${prefix}_${c}_frontside.png`;
 };
 
 const HomePage = () => {
@@ -105,101 +103,12 @@ const HomePage = () => {
                     </div>
                 </section>
 
-                {/* ── SCROLLABLE PRODUCT GALLERY ── */}
-                <section style={{ width: '100%', padding: '60px 20px' }}>
-                    <div className="container">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
-                            <h2 className="font-orbitron neon-cyan" style={{ fontSize: 'clamp(1.2rem, 4vw, 2rem)', fontWeight: 'bold', margin: 0 }}>
-                                FEATURED <span style={{ color: 'inherit' }}>COLLECTION</span>
-                            </h2>
-                            <Link to="/shop" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00ffff', textDecoration: 'none', fontWeight: '700', fontSize: '0.85rem', fontFamily: 'Orbitron, sans-serif', letterSpacing: '1px' }}>
-                                VIEW ALL <ArrowRight size={16} />
-                            </Link>
-                        </div>
+                {/* ── PRODUCT CAROUSELS ── */}
+                <ProductCarousel title="FEATURED COLLECTION" products={products.slice(0, 6)} prodLoading={prodLoading} />
+                <ProductCarousel title="TRENDING NOW" products={products.slice(2, 8)} prodLoading={prodLoading} />
 
-                        {/* scrollable container */}
-                        <div
-                            className="gallery-scroll"
-                            style={{
-                                maxHeight: '70vh',
-                                overflowY: 'auto',
-                                overflowX: 'hidden',
-                                paddingRight: '8px',
-                                scrollBehavior: 'smooth',
-                            }}
-                        >
-                            {prodLoading ? (
-                                <div style={{ padding: '60px', textAlign: 'center', color: '#555' }}>
-                                    <div style={{ fontSize: '2rem', marginBottom: '12px' }}>⏳</div>
-                                    <p className="font-orbitron" style={{ fontSize: '0.85rem', letterSpacing: '2px' }}>LOADING COLLECTION...</p>
-                                </div>
-                            ) : products.length === 0 ? (
-                                <div style={{ padding: '60px', textAlign: 'center', color: '#555' }}>
-                                    <p className="font-orbitron" style={{ fontSize: '0.85rem' }}>No products found.</p>
-                                </div>
-                            ) : (
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(2, 1fr)',
-                                    gap: '20px',
-                                }}>
-                                    {products.slice(0, 8).map((p, idx) => (
-                                        <Link
-                                            key={p._id || idx}
-                                            to={`/customize?color=${p.color || p.colors?.[0] || 'Black'}&fit=${p.fit_type}`}
-                                            className="glassmorphism"
-                                            style={{ padding: '16px', textDecoration: 'none', color: 'white', transition: 'var(--transition)', display: 'flex', flexDirection: 'column' }}
-                                        >
-                                            <div style={{ width: '100%', aspectRatio: '3/4', background: '#0f0f0f', borderRadius: '10px', overflow: 'hidden', position: 'relative', marginBottom: '12px' }}>
-                                                <img
-                                                    src={getImagePath(p)}
-                                                    alt={p.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                    onError={(e) => { e.target.onerror = null; e.target.src = '/assets/placeholder.png'; e.target.style.opacity = '0.4'; }}
-                                                />
-                                                <div style={{
-                                                    position: 'absolute', top: '8px', right: '8px',
-                                                    background: p.fit_type === 'OVERSIZED_FIT' ? '#ff00aa' : '#00ffff',
-                                                    color: '#0a0a0a', fontSize: '0.55rem', fontWeight: '900',
-                                                    padding: '2px 7px', borderRadius: '4px', fontFamily: 'Orbitron,sans-serif'
-                                                }}>
-                                                    {p.fit_type === 'OVERSIZED_FIT' ? 'OS' : 'NF'}
-                                                </div>
-                                            </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                                                <div>
-                                                    <h3 className="font-orbitron neon-pink" style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '2px' }}>{p.name}</h3>
-                                                    <p style={{ color: '#555', fontSize: '0.7rem' }}>{p.fit_type === 'OVERSIZED_FIT' ? 'Oversized' : 'Normal'} Fit</p>
-                                                </div>
-                                                <span className="neon-cyan" style={{ fontWeight: '900', fontSize: '0.95rem' }}>₹{p.price}</span>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </section>
-
-                {/* ── COLOR PREVIEW ── */}
-                <section style={{ width: '100%', padding: '60px 20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div className="container">
-                        <h2 className="font-orbitron neon-pink" style={{ fontSize: 'clamp(1.2rem, 4vw, 2rem)', fontWeight: 'bold', marginBottom: '40px', textAlign: 'center' }}>AVAILABLE <span style={{ color: 'inherit' }}>COLORS</span></h2>
-                        <div className="grid grid-cols-4" style={{ gap: '16px' }}>
-                            {['Black', 'White', 'Blue', 'Purple'].map((color) => {
-                                const colorName = color === 'Blue' ? 'Skyblue' : color;
-                                return (
-                                    <Link key={color} to={`/customize?color=${color}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <div className="glassmorphism" style={{ padding: '16px', borderRadius: '16px', width: '100%', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'var(--transition)' }}>
-                                            <img src={`/assets/NORMAL_FIT/Normal_fit_${colorName}_frontside.png`} alt={`${color} T-Shirt`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                        </div>
-                                        <span className="font-orbitron" style={{ fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase', marginTop: '12px', color: '#ccc' }}>{color}</span>
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </section>
+                {/* ── COLOR PREVIEW / COLOR CAROUSEL ── */}
+                <ColorCarousel />
 
                 {/* ── FIT TYPE ── */}
                 <section style={{ width: '100%', padding: '60px 20px' }}>
@@ -248,4 +157,195 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+
+/* ── PRODUCT CAROUSEL COMPONENT ── */
+const ProductCarousel = ({ title, products, prodLoading }) => {
+    const scrollRef = useRef(null);
+
+    const scroll = (direction) => {
+        if (!scrollRef.current) return;
+        const { clientWidth } = scrollRef.current;
+        const scrollAmount = direction === 'left' ? -clientWidth : clientWidth;
+        scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    };
+
+    return (
+        <section style={{ width: '100%', padding: '40px 20px', background: 'rgba(255,255,255,0.01)' }}>
+            <div className="container" style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                    <h2 className="font-orbitron neon-cyan" style={{ fontSize: 'clamp(1.1rem, 3.5vw, 1.8rem)', fontWeight: 'bold', margin: 0 }}>
+                        {title.split(' ')[0]} <span style={{ color: 'inherit' }}>{title.split(' ').slice(1).join(' ')}</span>
+                    </h2>
+                    <Link to="/shop" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00ffff', textDecoration: 'none', fontWeight: '700', fontSize: '0.8rem', fontFamily: 'Orbitron, sans-serif', letterSpacing: '1px' }}>
+                        VIEW ALL <ArrowRight size={14} />
+                    </Link>
+                </div>
+
+                {prodLoading ? (
+                    <div style={{ padding: '60px', textAlign: 'center', color: '#555' }}>
+                        <div style={{ fontSize: '2rem', marginBottom: '12px' }}>⏳</div>
+                        <p className="font-orbitron" style={{ fontSize: '0.85rem' }}>LOADING...</p>
+                    </div>
+                ) : products.length === 0 ? (
+                    <div style={{ padding: '40px', textAlign: 'center', color: '#555' }}>
+                        <p className="font-orbitron" style={{ fontSize: '0.85rem' }}>No products found.</p>
+                    </div>
+                ) : (
+                    <div style={{ position: 'relative' }}>
+                        {/* LEFT ARROW */}
+                        <button
+                            onClick={() => scroll('left')}
+                            style={{
+                                position: 'absolute', left: '-15px', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+                                background: 'rgba(0,0,0,0.8)', color: '#00ffff', border: '1px solid rgba(0,255,255,0.3)',
+                                borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', boxShadow: '0 0 10px rgba(0,255,255,0.2)',
+                            }}
+                            className="hidden md:flex hover:bg-[#00ffff] hover:text-black transition-all"
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+
+                        {/* SCROLL CONTAINER */}
+                        <div
+                            ref={scrollRef}
+                            className="hide-scrollbar"
+                            style={{
+                                display: 'flex', gap: '16px', overflowX: 'auto', scrollBehavior: 'smooth',
+                                paddingBottom: '16px', snapType: 'x mandatory',
+                            }}
+                        >
+                            {products.map((p, idx) => (
+                                <Link
+                                    key={p._id || idx}
+                                    to={`/customize?color=${p.color || p.colors?.[0] || 'Black'}&fit=${p.fit_type}`}
+                                    className="glassmorphism hover-lift"
+                                    style={{
+                                        flex: '0 0 calc(50% - 8px)', maxWidth: '280px', textDecoration: 'none', color: 'white',
+                                        padding: '16px', transition: 'transform 0.3s, box-shadow 0.3s', display: 'flex', flexDirection: 'column',
+                                        scrollSnapAlign: 'start',
+                                    }}
+                                >
+                                    <div style={{ width: '100%', aspectRatio: '3/4', background: '#0f0f0f', borderRadius: '10px', overflow: 'hidden', position: 'relative', marginBottom: '12px' }}>
+                                        <img
+                                            src={getImagePath(p)}
+                                            alt={p.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = '/assets/placeholder.png'; e.target.style.opacity = '0.4'; }}
+                                        />
+                                        <div style={{
+                                            position: 'absolute', top: '8px', right: '8px',
+                                            background: p.fit_type === 'OVERSIZED_FIT' ? '#ff00aa' : '#00ffff',
+                                            color: '#0a0a0a', fontSize: '0.55rem', fontWeight: '900',
+                                            padding: '2px 7px', borderRadius: '4px', fontFamily: 'Orbitron,sans-serif'
+                                        }}>
+                                            {p.fit_type === 'OVERSIZED_FIT' ? 'OS' : 'NF'}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mt: 'auto' }}>
+                                        <div style={{ flex: 1, paddingRight: '8px' }}>
+                                            <h3 className="font-orbitron neon-pink" style={{ fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</h3>
+                                            <p style={{ color: '#555', fontSize: '0.7rem' }}>{p.fit_type === 'OVERSIZED_FIT' ? 'Oversized' : 'Normal'} Fit</p>
+                                        </div>
+                                        <span className="neon-cyan" style={{ fontWeight: '900', fontSize: '0.9rem' }}>₹{p.price}</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        {/* RIGHT ARROW */}
+                        <button
+                            onClick={() => scroll('right')}
+                            style={{
+                                position: 'absolute', right: '-15px', top: '50%', transform: 'translateY(-50%)', zIndex: 20,
+                                background: 'rgba(0,0,0,0.8)', color: '#00ffff', border: '1px solid rgba(0,255,255,0.3)',
+                                borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', boxShadow: '0 0 10px rgba(0,255,255,0.2)',
+                            }}
+                            className="hidden md:flex hover:bg-[#00ffff] hover:text-black transition-all"
+                        >
+                            <ChevronRight size={24} />
+                        </button>
+                    </div>
+                )}
+            </div>
+        </section>
+    );
+};
+
+/* ── COLOR CAROUSEL COMPONENT ── */
+const ColorCarousel = () => {
+    const scrollRef = useRef(null);
+
+    const scroll = (direction) => {
+        if (!scrollRef.current) return;
+        const { clientWidth } = scrollRef.current;
+        const scrollAmount = direction === 'left' ? -clientWidth : clientWidth;
+        scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    };
+
+    const colors = ['Black', 'White', 'Blue', 'Purple'];
+
+    return (
+        <section style={{ width: '100%', padding: '60px 20px', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className="container" style={{ position: 'relative' }}>
+                <h2 className="font-orbitron neon-pink" style={{ fontSize: 'clamp(1.2rem, 4vw, 2rem)', fontWeight: 'bold', marginBottom: '40px', textAlign: 'center' }}>AVAILABLE <span style={{ color: 'inherit' }}>COLORS</span></h2>
+
+                <div style={{ position: 'relative' }}>
+                    {/* LEFT ARROW OVERLAY */}
+                    <button
+                        onClick={() => scroll('left')}
+                        style={{
+                            position: 'absolute', left: '-15px', top: '40%', transform: 'translateY(-50%)', zIndex: 20,
+                            background: 'rgba(0,0,0,0.8)', color: '#ff00aa', border: '1px solid rgba(255,0,170,0.3)',
+                            borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', boxShadow: '0 0 10px rgba(255,0,170,0.2)',
+                        }}
+                        className="hidden md:flex hover:bg-[#ff00aa] hover:text-white transition-all"
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+
+                    <div
+                        ref={scrollRef}
+                        className="hide-scrollbar"
+                        style={{
+                            display: 'flex', gap: '16px', overflowX: 'auto', scrollBehavior: 'smooth',
+                            paddingBottom: '16px', snapType: 'x mandatory',
+                        }}
+                    >
+                        {colors.map((color) => {
+                            const colorName = color === 'Blue' ? 'Skyblue' : color;
+                            return (
+                                <div key={color} style={{ flex: '0 0 calc(25% - 12px)', minWidth: '220px', scrollSnapAlign: 'start' }}>
+                                    <Link to={`/customize?color=${color}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div className="glassmorphism hover-lift" style={{ padding: '16px', borderRadius: '16px', width: '100%', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'var(--transition)' }}>
+                                            <img src={`/assets/NORMAL_FIT/Normal_fit_${colorName}_frontside.png`} alt={`${color} T-Shirt`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                        </div>
+                                        <span className="font-orbitron" style={{ fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase', marginTop: '12px', color: '#ccc' }}>{color}</span>
+                                    </Link>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* RIGHT ARROW OVERLAY */}
+                    <button
+                        onClick={() => scroll('right')}
+                        style={{
+                            position: 'absolute', right: '-15px', top: '40%', transform: 'translateY(-50%)', zIndex: 20,
+                            background: 'rgba(0,0,0,0.8)', color: '#ff00aa', border: '1px solid rgba(255,0,170,0.3)',
+                            borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', boxShadow: '0 0 10px rgba(255,0,170,0.2)',
+                        }}
+                        className="hidden md:flex hover:bg-[#ff00aa] hover:text-white transition-all"
+                    >
+                        <ChevronRight size={24} />
+                    </button>
+                </div>
+            </div>
+        </section>
+    );
+};
 

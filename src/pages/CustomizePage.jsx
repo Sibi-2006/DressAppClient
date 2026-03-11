@@ -528,7 +528,7 @@ const CustomizePage = () => {
                         <div style={{ marginBottom: '18px' }}>
                             <label style={{ color: '#999', fontSize: '0.8rem', marginBottom: '8px', display: 'block' }}>Choose Fit</label>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                {[{ id: 'NORMAL_FIT', label: 'Normal  ₹799' }, { id: 'OVERSIZED_FIT', label: 'Oversized  ₹999' }].map(f => (
+                                {[{ id: 'NORMAL_FIT', label: 'Normal  $29.99' }, { id: 'OVERSIZED_FIT', label: 'Oversized  $34.99' }].map(f => (
                                     <button key={f.id} onClick={() => setFitType(f.id)} style={{
                                         padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', flex: '1 1 auto', minWidth: '130px',
                                         background: fitType === f.id ? 'var(--neon-cyan)' : 'rgba(255,255,255,0.05)',
@@ -541,54 +541,17 @@ const CustomizePage = () => {
                             </div>
                         </div>
 
-                        {/* Color — Vertical Scrollable List */}
+                        {/* Color */}
                         <div style={{ marginBottom: '18px' }}>
-                            <label style={{ color: '#999', fontSize: '0.8rem', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <span>Pick Color</span>
-                                <span style={{ color: 'var(--neon-cyan)', fontWeight: 'bold', fontSize: '0.75rem' }}>{color}</span>
-                            </label>
-                            <div style={{
-                                display: 'flex', flexDirection: 'column', gap: '6px',
-                                maxHeight: '180px', overflowY: 'auto', overflowX: 'hidden',
-                                paddingRight: '4px',
-                                scrollbarWidth: 'thin',
-                                scrollbarColor: 'rgba(0,255,249,0.3) transparent',
-                            }}>
+                            <label style={{ color: '#999', fontSize: '0.8rem', marginBottom: '8px', display: 'block' }}>Pick Color</label>
+                            <div style={{ display: 'flex', gap: '10px' }}>
                                 {COLORS.map(c => (
-                                    <button
-                                        key={c}
-                                        onClick={() => setColor(c)}
-                                        title={c}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '12px',
-                                            padding: '8px 12px', borderRadius: '10px', cursor: 'pointer',
-                                            background: color === c ? 'rgba(0,255,249,0.08)' : 'rgba(255,255,255,0.03)',
-                                            border: color === c ? '1px solid rgba(0,255,249,0.5)' : '1px solid rgba(255,255,255,0.07)',
-                                            transition: 'all 0.2s', textAlign: 'left', width: '100%',
-                                            boxShadow: color === c ? '0 0 12px rgba(0,255,249,0.12)' : 'none',
-                                        }}
-                                    >
-                                        {/* Color circle */}
-                                        <div style={{
-                                            width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0,
-                                            background: colorHexMap[c] || c.toLowerCase(),
-                                            border: c === 'White' ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.3)',
-                                            boxShadow: color === c ? `0 0 8px ${colorHexMap[c]}88` : 'none',
-                                        }} />
-                                        {/* Label */}
-                                        <span style={{
-                                            color: color === c ? 'var(--neon-cyan)' : '#ccc',
-                                            fontWeight: color === c ? '700' : '400',
-                                            fontSize: '0.82rem', flex: 1, fontFamily: 'Orbitron, sans-serif',
-                                            letterSpacing: '0.5px',
-                                        }}>
-                                            {c.toUpperCase()}
-                                        </span>
-                                        {/* Active tick */}
-                                        {color === c && (
-                                            <span style={{ color: 'var(--neon-cyan)', fontSize: '0.9rem', lineHeight: 1 }}>✓</span>
-                                        )}
-                                    </button>
+                                    <button key={c} onClick={() => setColor(c)} title={c} style={{
+                                        width: '36px', height: '36px', borderRadius: '50%',
+                                        background: colorHexMap[c] || c.toLowerCase(),
+                                        border: color === c ? '3px solid var(--neon-cyan)' : '2px solid transparent',
+                                        cursor: 'pointer', transition: 'all 0.2s'
+                                    }} />
                                 ))}
                             </div>
                         </div>
